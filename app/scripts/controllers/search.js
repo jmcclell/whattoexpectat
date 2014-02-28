@@ -1,39 +1,55 @@
 'use strict';
 
 angular.module('whattoexpectatApp')
-  .controller('SearchCtrl', function($scope, geolocation, ngGeocoderAPI) {
+  .controller('SearchCtrl', function($scope, geolocation, ngGeocoderAPI, localStorageService) {
 
     var locations = {
       'New York, NY': ngGeocoderAPI.latlng(40.6700,  73.9400) // default location
     };
 
-    $scope.location = {name: 'New York, NY', coords: locations['New York, NY']};
-
-    geolocation.getLocation().then(function(data) {
-      console.log(data);
-
-      var geoLocationLatLong = ngGeocoderAPI.latlng(data.coords.latitude, data.coords.longitude);
-
-      $scope.location = geoLocationLatLong;
-
-      ngGeocoderAPI.geocode({
-        location: ngGeocoderAPI.latlng(data.coords.latitude, data.coords.longitude)
-      }).then(function(reverseData) {
-        console.log(reverseData);
-        var bestMatch = ngGeocoderAPI.parseReverseGeolocation(reverseData, ['neighborhood', 'postal_code', 'street_address']);
-
-        if (bestMatch == null) {
-          $scope.location = {name: geoLocationLatLong.toString(), coords: geoLocationLatLong};          
-        } else {
-
-          locations[bestMatch.formatted_address] = geoLocationLatLong;
-          $scope.location = {name: bestMatch.formatted_address, coords: locations['dude sweet']};
-        }
-
-      },function() {
-        $scope.location = {name: geoLocationLatLong.toString(), coords: geoLocationLatLong};
+    var setLocation = function(name, latlng) {
+      var location = {
+        name: name,
+        coords: latlng
+      };
+      locations[name] = latlng;
+      $scope.location = location;
+      localStorageService.set('location', {
+        name: name,
+        lat: latlng.latitude,
+        long: latlng.longitude
       });
-    });
+    };
+
+    
+    
+    var storedLocation = localStorageService.get('location');
+
+    if(storedLocation) {
+      setLocation(storedLocation.name, ngGeocoderAPI.latlng(storedLocation.lat, storedLocation.long));
+    } else {
+      setLocation('New York, NY', locations['New York, NY']); // set default for now
+
+      geolocation.getLocation().then(function(data) {
+        console.log(data);
+        var geoLocationLatLong = ngGeocoderAPI.latlng(data.coords.latitude, data.coords.longitude);
+        ngGeocoderAPI.geocode({
+          location: geoLocationLatLong
+        }).then(function(reverseData) {
+          console.log(reverseData);
+          var bestMatch = ngGeocoderAPI.parseReverseGeolocation(reverseData, ['neighborhood', 'postal_code', 'street_address']);
+
+          if (bestMatch == null) {
+            setLocation(geoLocationLatLong.toString(), geosLocationLatLong);          
+          } else {
+            setLocation(bestMatch.formatted_address, geoLocationLatLong);
+          }
+
+        },function() {
+          setLocation(geoLocationLatLong.toString(), geosLocationLatLong);           
+        });
+      });
+    }
 
     $scope.$watch('location.name', function(newName, oldName) {
       if (locations[newName]) {
@@ -44,10 +60,10 @@ angular.module('whattoexpectatApp')
         }).then(function(geocodeData) {
           console.log(geocodeData);
           if(geocodeData.length > 0) {
-          	locations[newName] = geocodeData[0].geometry.location;
-          	$scope.location.coords = locations[newName];
+          	setLocation(newName, geocodeData[0].geometry.location);     
           } else {
-          	$scope.location.name = oldName;
+          	// some kind of fail message?
+            $scope.location.name = oldName;
           }          
         });
       }

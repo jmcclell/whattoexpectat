@@ -9,7 +9,8 @@ angular.module('whattoexpectatApp', [
   'ngGeocoder',
   'firebase',
   'geolocation',
-  'xeditable'
+  'xeditable',
+  'LocalStorageModule'
 ])
   .config(function($routeProvider) {
     $routeProvider
@@ -21,6 +22,9 @@ angular.module('whattoexpectatApp', [
         redirectTo: '/'
       });
   })
+  .config(['localStorageServiceProvider', function(localStorageServiceProvider) {
+    localStorageServiceProvider.setPrefix('whatToExpectAt');
+  }])
   .run(function(editableOptions) {
     editableOptions.theme = 'bs3';
   });
