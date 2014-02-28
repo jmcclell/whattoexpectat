@@ -5,16 +5,15 @@ angular.module('whattoexpectatApp', [
   'ngResource',
   'ngSanitize',
   'ngRoute',
-  'services.config',
-  'services.chat'
-]);
-  /*.config(function ($routeProvider) {
+  'firebase'
+])
+  .config(function($routeProvider) {
     $routeProvider
       .when('/', {
-        templateUrl: 'views/main.html',
-        controller: 'MainCtrl'
+        templateUrl: 'views/search.html',
+        controller: 'SearchCtrl'
       })
       .otherwise({
         redirectTo: '/'
       });
-  });*/
+  });

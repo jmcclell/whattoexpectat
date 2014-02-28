@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('services.chat', ['services.config', 'firebase'])
+angular.module('whattoexpectatApp')
   .factory('ChatService', function(configuration, $firebase) {
     var ref = new Firebase(
       'https://' + configuration.firebase + '.firebaseio.com/chat');

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('services.config', [])
+angular.module('whattoexpectatApp')
   .constant('configuration', {
     firebase: '@@firebase'
   });
