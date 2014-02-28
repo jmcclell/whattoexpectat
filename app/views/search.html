@@ -1,8 +1,9 @@
-<h1>Search Place</h1>
+<h1>Search Places</h1>
 
 <form ng-submit="doSearch();">
   <input type="text" ng-model="term"/>
   <input type="submit" value="Search"/>
-  near {{ location.name }}
 </form>
-
+  <p>
+  near <a href="#" editable-text="location.name">{{ location.name }}</a>
+  </p>

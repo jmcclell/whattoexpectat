@@ -31,7 +31,36 @@ provider('ngGeocoderAPI', function() {
 
       latlng: function(lat, long) {
         return new gMaps.LatLng(lat, long);
+      },
+
+      parseReverseGeolocation: function(results, orderedTypePreference) {
+      if (results.length < 1) {
+        return null;
       }
+
+      var bestMatchIndex = null;
+      var bestMatch = null;
+      for (var curResult in results) {
+        var result = results[curResult];
+        for (var curType in result['types']) {
+          var type = result['types'][curType];          
+          var index = $.inArray(type, orderedTypePreference);          
+          if (index >= 0) {
+            if (bestMatchIndex == null || index < bestMatchIndex) {
+              bestMatchIndex = index;
+              bestMatch = result;
+            }
+          }
+        }
+      }
+
+      if (bestMatch == null) {
+        // couldn't find one that we wanted so take the most specific
+        bestMatch = results[0];
+      } 
+
+      return bestMatch;
+    }
     };
   };
 

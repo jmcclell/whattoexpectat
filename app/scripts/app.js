@@ -8,7 +8,8 @@ angular.module('whattoexpectatApp', [
   //'ngGPlaces',
   'ngGeocoder',
   'firebase',
-  'geolocation'
+  'geolocation',
+  'xeditable'
 ])
   .config(function($routeProvider) {
     $routeProvider
@@ -19,4 +20,7 @@ angular.module('whattoexpectatApp', [
       .otherwise({
         redirectTo: '/'
       });
+  })
+  .run(function(editableOptions) {
+    editableOptions.theme = 'bs3';
   });
