@@ -52,11 +52,13 @@
     <script src="bower_components/angular-cookies/angular-cookies.js"></script>
     <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
     <script src="bower_components/angular-route/angular-route.js"></script>
-    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="bower_components/firebase/firebase.js"></script>
     <script src="bower_components/firebase-simple-login/firebase-simple-login.js"></script>
     <script src="bower_components/angularfire/angularfire.js"></script>
+    <script src="bower_components/angularjs-geolocation/src/geolocation.js"></script>
     <!-- endbower -->
+    <!-- <script src="bower_components/angularjs-google-places/src/angularjs-google-places.js"></script> -->
+    <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
     <!-- endbuild -->
 
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
@@ -66,6 +68,7 @@
     <script src="scripts/controllers/chat.js"></script>
     <script src="scripts/services/search.js"></script>
     <script src="scripts/controllers/search.js"></script>
+    <script src="scripts/services/geocoder.js"></script>
     <!-- endbuild -->
 </body>
 </html>

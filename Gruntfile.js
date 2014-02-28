@@ -7,7 +7,7 @@
 // use this if you want to recursively match all subfolders:
 // 'test/spec/**/*.js'
 
-module.exports = function (grunt) {
+module.exports = function(grunt) {
 
   // Load grunt tasks automatically
   require('load-grunt-tasks')(grunt);
@@ -149,7 +149,8 @@ module.exports = function (grunt) {
         html: '<%= yeoman.app %>/index.html',
         ignorePath: '<%= yeoman.app %>/',
         exclude: [
-          '<%= yeoman.app %>/bower_components/bootstrap/dist/js/bootstrap.js'
+          '<%= yeoman.app %>/bower_components/bootstrap/dist/js/bootstrap.js',
+          '<%= yeoman.app %>/bower_components/angularjs-google-places/src/angularjs-google-places.js'
         ]
       }
     },
@@ -392,7 +393,7 @@ module.exports = function (grunt) {
     ]);
   });
 
-  grunt.registerTask('server', function () {
+  grunt.registerTask('server', function() {
     grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
     grunt.task.run(['serve']);
   });

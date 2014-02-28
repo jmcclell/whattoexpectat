@@ -5,7 +5,10 @@ angular.module('whattoexpectatApp', [
   'ngResource',
   'ngSanitize',
   'ngRoute',
-  'firebase'
+  //'ngGPlaces',
+  'ngGeocoder',
+  'firebase',
+  'geolocation'
 ])
   .config(function($routeProvider) {
     $routeProvider
