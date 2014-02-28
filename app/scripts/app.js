@@ -5,7 +5,7 @@ angular.module('whattoexpectatApp', [
   'ngResource',
   'ngSanitize',
   'ngRoute',
-  //'ngGPlaces',
+  'ngGPlaces',
   'ngGeocoder',
   'firebase',
   'geolocation',

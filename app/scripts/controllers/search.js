@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('whattoexpectatApp')
-  .controller('SearchCtrl', function($scope, geolocation, ngGeocoderAPI, localStorageService) {
+  .controller('SearchCtrl', function($scope, geolocation, ngGeocoderAPI, localStorageService, ngGPlacesAPI) {
 
     var locations = {
       'New York, NY': ngGeocoderAPI.latlng(40.6700,  73.9400) // default location
@@ -16,13 +16,11 @@ angular.module('whattoexpectatApp')
       $scope.location = location;
       localStorageService.set('location', {
         name: name,
-        lat: latlng.latitude,
-        long: latlng.longitude
+        lat: latlng.lat(),
+        long: latlng.lng()
       });
     };
 
-    
-    
     var storedLocation = localStorageService.get('location');
 
     if(storedLocation) {
@@ -70,6 +68,14 @@ angular.module('whattoexpectatApp')
     });
 
     $scope.doSearch = function() {
-      
-    };
+      var lat = $scope.location.coords.lat();
+      var long = $scope.location.coords.lng();
+      console.log('searching: ' + $scope.term + " near " + lat + ", " + long);
+      var results = ngGPlacesAPI.nearbySearch({latitude: lat, longitude: long, name: $scope.term}).then(
+	    function(data){
+	      console.log(data);
+	    }, function(reason) {
+	      console.log(reason);
+	    });
+      };
   });
