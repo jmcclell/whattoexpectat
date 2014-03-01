@@ -1,20 +1,39 @@
-<h1>Search Places</h1>
-
-<form ng-submit="doSearch();">
-  <input type="text" ng-model="search.term" ng-disabled="!canSearch()"/>
-  <input type="submit" value="Search" ng-disabled="!canSearch()"/>
+<h1><small>What to expect at...</small></h1>
+<form ng-submit="doSearch();" role="form">
+  <div class="form-group">
+    <div class="input-group">
+      <label class="sr-only" for="search-input">Search</label>
+      <input id="search-input" type="text" class="form-control" ng-model="search.term" ng-disabled="!canSearch()"/>      
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="submit" ng-disabled="!canSearch()">Search</button>
+      </span>
+    </div>
+  </div> 
 </form>
-<p>
-    near <a href="#" editable-text="search.locationInput" e-placeholder="New York, NY" onbeforesave="updateLocation($data)">{{ search.locationInput || 'Click to choose location'}}</a>
-    <img ng-hide="canSearch()" src="images/loading.gif" />
-</p>
+<div class="clearfix">
+  <p class="pull-right" style="padding-right: 75px; margin-top: -15px;">
+      <small><strong>Location:&nbsp;</strong><a href="#" editable-text="search.locationInput" e-placeholder="New York, NY" onbeforesave="updateLocation($data)">{{ search.locationInput || 'Click to choose location'}}</a></small>
+      <img ng-hide="canSearch()" src="images/loading.gif" />
+  </p>
+</div>
+<div>
+  <div class="result-metadata clearfix" ng-show="hasSearched()">
+    <p><small>Search returned <strong>{{ getResultCount() }}</strong> results.</small></p>
+  </div>
 
-<div class="results">
-  <div class="result" ng-hide="hasResults()">
-	<p>Search returned no results.</p>
+  <div class="result-metadata" ng-show="isSearching">
+    <img src="images/loading-large.gif" />
   </div>
-  <div class="result" ng-repeat="result in results">
-      <a href ng-href="#/place/{{result.reference}}">{{ result.name }}</a>
-      <p>{{ result.vicinity }}</p>
-  </div>
+
+  <ul class="results media-list">
+    <li class="result media" ng-repeat="result in getResults()" >
+      <a class="pull-left" href ng-href="#/reviews/{{result.slug}}?gref={{result.reference}}">
+        <img class="media-object" ng-src="{{ (result.photos[0].getUrl({maxWidth: 120, maxHeight: 120})) || 'images/default.png' }}" alt="{{ result.name }}" width="60" height="60">
+      </a>
+      <div class="media-body">
+        <h4 class="media-heading"><a href ng-href="#/reviews/{{result.slug}}?gref={{result.reference}}">{{ result.name }}</a></h4>
+        <p>{{ result.vicinity }}</p>
+      </div>
+    </li>
+  </ul>
 </div>

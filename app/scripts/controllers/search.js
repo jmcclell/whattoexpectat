@@ -1,55 +1,74 @@
 'use strict';
 
 angular.module('whattoexpectatApp')
-  .controller('SearchCtrl', function($scope, LocationService, ngGPlacesAPI) {
+  .controller('SearchCtrl', function($scope, LocationService, SearchService, $routeParams, $location) {
     $scope.currentLocation = null;
-    $scope.results = false;
+    $scope.isSearching = false;
 
     $scope.search = {
       term: '',
       locationInput: ''
     };
 
-    /*
-     * Attempt to load real location
-     */
-    // 
-    LocationService.getCurrentLocation()
-      .then(function(location) {
-        $scope.currentLocation = location;
-      });
+    var urlQuery = $location.search().q;
+    var urlLocation = $location.search().l;
 
-    $scope.$watch('currentLocation', function(newLocation) {
-      if (newLocation != null) {
-        $scope.search.locationInput = newLocation.name;  
-        console.log("Current location: " + newLocation.name);      
+    console.log("location provided in url: " + urlLocation);
+
+    if(urlQuery) {
+      $scope.search.term = urlQuery;
+    }
+    
+    if (urlLocation) {
+      LocationService.setCurrentLocationByName(urlLocation)
+        .then(function(location) {
+          $scope.currentLocation = location;
+        });
+    } else {
+      LocationService.getCurrentLocation()
+        .then(function(location) {
+          $scope.currentLocation = location;
+        });
+    }
+
+    $scope.$watch('currentLocation', function(newLocation) {      
+      if (newLocation != null && newLocation != '') {
+        $scope.search.locationInput = newLocation.name;        
+        console.log('Current location: ' + newLocation.name);
+        $location.search('l', newLocation.name);
+        if($scope.search.term != '') {
+          $scope.doSearch();
+        }
       }
     });
 
-    /*
-     * Perform search
-     */
     $scope.doSearch = function() {
-      if ($scope.search.term.trim() == '') {
+      var term = $scope.search.term;
+      var searchPromise = SearchService.search(term);
+
+      if (searchPromise === false) {
         return;
       }
-      var lat = $scope.currentLocation.coords.lat();
-      var long = $scope.currentLocation.coords.lng();
 
-      var results = ngGPlacesAPI.nearbySearch({
-        latitude: lat,
-        longitude: long,
-        name: $scope.search.term
-      }).then(
-          function(data) {
-            $scope.results = data;
-          }, function(reason) {
-            $scope.results = [];
-          });
-        };
+      $scope.isSearching = true;
+      $location.search('q', term);
+      searchPromise.then(function() {
+        $scope.isSearching = false;
+      });
+
+    };
+
+    $scope.getResults = function() {
+      return SearchService.getCurrentSearchResults();
+    };
+
+    $scope.getResultCount = function() {
+      return SearchService.getCurrentSearchResultCount();
+    }
 
     $scope.hasResults = function() {
-      return ($scope.results === false || $scope.results.length > 0);
+      return (!SearchService.hasSearched() ||
+       SearchService.getCurrentSearchResultCount() > 0);
     };
 
     $scope.updateLocation = function(locationName) {
@@ -58,7 +77,7 @@ angular.module('whattoexpectatApp')
         return false;
       }
 
-      $scope.currentLocation = null;
+      $scope.currentLocation = null;      
       LocationService.setCurrentLocationByName(locationName)
         .then(
           function(newLocation) {
@@ -70,4 +89,8 @@ angular.module('whattoexpectatApp')
     $scope.canSearch = function() {
       return $scope.currentLocation != null;
     };
+
+    $scope.hasSearched = function() {
+      return SearchService.hasSearched();
+    }
   });

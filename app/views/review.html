@@ -1,0 +1,41 @@
+<h1><small>What to expect at</small> {{ review.place.name }}</h1>
+
+<address>
+  {{ review.place.formatted_address }}<br>
+  {{ review.place.formatted_phone_number }}<br>
+  <a href="{{ review.place.website }}">{{ review.place.website }}</a>
+</address>
+
+<a href ng-click="backToSearchResults()" ng-show="cameFromSearch">Back to search results</a>
+
+<h4>People said...</h4>
+<div class="reviews">
+   <!-- </p><em class="text-muted">No reviews at this time</em></div> -->
+	<blockquote>
+	  <p>I had to ask for limes. Twice.</p>
+	  <footer>Niles Rowland</footer>
+	</blockquote>
+	<blockquote>
+	  <p>Pooping here is a nightmare rivaled only by the 11th floor Discovery bathroom.</p>
+	  <footer>Sunny Patel</footer>
+	</blockquote>
+
+</div>
+
+<h4>People saw...</h4>
+
+
+<carousel interval="-1" style="width: 350px;">
+  <slide ng-repeat="photo in review.place.photos">
+    <img ng-src="{{photo.getUrl({maxWidth: 350, maxHeight: 350 })}}" style="margin:auto;">
+    <div class="carousel-caption">
+    </div>
+  </slide>
+</carousel>
+  
+
+<h4>Map</h4>
+<style>
+.angular-google-map-container { height: 350px; width: 350px; }
+</style>
+<google-map center="map.center" zoom="map.zoom"></google-map>

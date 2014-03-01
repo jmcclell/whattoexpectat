@@ -14,13 +14,18 @@
     "firebase": "~1.0.10",
     "angularfire": "~0.7.0",
     "angularjs-google-places": "git://github.com/jmcclell/angularjs-google-places.git#~0.1.0",
-    "angular-ui-bootstrap": "~0.10.0",
     "angularjs-geolocation": "~0.1.1",
     "angular-xeditable": "~0.1.8",
-    "angular-local-storage": "~0.0.1"
+    "angular-local-storage": "~0.0.1",
+    "angular-slugify": "~1.0.0",
+    "angular-bootstrap": "~0.10.0",
+    "angular-google-maps": "~1.0.13"
   },
   "devDependencies": {
     "angular-mocks": "1.2.6",
     "angular-scenario": "1.2.6"
+  },
+  "resolutions": {
+    "angular": "1.2.6"
   }
 }

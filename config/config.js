@@ -2,5 +2,6 @@
 
 angular.module('whattoexpectatApp')
   .constant('configuration', {
-    firebase: '@@firebase'
+    firebase: '@@firebase',
+    google_api_key: '@@google_api_key'
   });
