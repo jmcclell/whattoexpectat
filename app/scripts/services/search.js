@@ -1,12 +1,15 @@
 'use strict';
 
 angular.module('whattoexpectatApp')
-  .factory('SearchService', function(LocationService, ngGPlacesAPI, $q, Slug) {
+  .factory('SearchService', function($q, Slug, $window) {
     var currentSearchTerm = null;    
     var currentSearchResults = null;
     var currentSearchResultsIndex = [];
     var currentSearchResultCount = 0;
     var hasSearched = false; 
+    var dummyMap = $window.document.createElement('div');
+    var placesService = 
+      new google.maps.places.PlacesService(dummyMap);
 
 
     var indexSearchResults = function(results) {
@@ -16,7 +19,7 @@ angular.module('whattoexpectatApp')
 
       for (var index in results) {
         var result = results[index];
-        result.slug = Slug.slugify(result.name + ' ' + result.vicinity); // add slug to each result
+        result.slug = Slug.slugify(result.name + ' ' + result.formatted_address); // add slug to each result
         currentSearchResultsIndex[result.slug] = index;
       }
       console.log(currentSearchResultsIndex);
@@ -42,24 +45,17 @@ angular.module('whattoexpectatApp')
         var searchPromise = $q.defer();
         currentSearchTerm = term;
 
-        LocationService.getCurrentLocation()
-          .then(function(location) {
-            var lat = location.coords.lat();
-            var long = location.coords.lng();
-
-            var results = ngGPlacesAPI.nearbySearch({
-              latitude: lat,
-              longitude: long,
-              name: term
-            }).then(
-              function(data) {
-                setSearchResults(data); 
-                searchPromise.resolve(currentSearchResults);          
-              }, function(reason) {
-                setSearchResults([]);
-                searchPromise.resolve(currentSearchResults);
-            });          
-          });
+        var results = placesService.textSearch({
+          query: term
+        }, function(results, status) {
+            if (status == google.maps.places.PlacesServiceStatus.OK) {
+              setSearchResults(results); 
+              searchPromise.resolve(currentSearchResults); 
+            } else {
+              setSearchResults([]);
+              searchPromise.resolve(currentSearchResults);
+            }
+        });       
 
         return searchPromise.promise;
       },
@@ -83,6 +79,20 @@ angular.module('whattoexpectatApp')
         } else {
           return null;
         }
+      },
+      getPlaceDetailByGRef: function(gref) {
+        var deferred = $q.defer();
+        placesService.getDetails({
+          reference: gref
+        }, function(result, status) {
+            if (status == google.maps.places.PlacesServiceStatus.OK) {
+              deferred.resolve(result); 
+            } else {
+              deferred.reject('Could not load data.');
+            }
+        });
+
+        return deferred.promise;
       }
     };
   });

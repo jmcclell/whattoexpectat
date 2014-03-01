@@ -3,37 +3,30 @@
   <div class="form-group">
     <div class="input-group">
       <label class="sr-only" for="search-input">Search</label>
-      <input id="search-input" type="text" class="form-control" ng-model="search.term" ng-disabled="!canSearch()"/>      
+      <input id="search-input" type="text" class="form-control" ng-model="search.term" placeholder="Cafe Grumpy Brooklyn, NY"/>      
       <span class="input-group-btn">
-        <button class="btn btn-default" type="submit" ng-disabled="!canSearch()">Search</button>
+        <button class="btn btn-default" type="submit">Search</button>
       </span>
     </div>
   </div> 
 </form>
-<div class="clearfix">
-  <p class="pull-right" style="padding-right: 75px; margin-top: -15px;">
-      <small><strong>Location:&nbsp;</strong><a href="#" editable-text="search.locationInput" e-placeholder="New York, NY" onbeforesave="updateLocation($data)">{{ search.locationInput || 'Click to choose location'}}</a></small>
-      <img ng-hide="canSearch()" src="images/loading.gif" />
-  </p>
-</div>
-<div>
-  <div class="result-metadata clearfix" ng-show="hasSearched()">
-    <p><small>Search returned <strong>{{ getResultCount() }}</strong> results.</small></p>
-  </div>
 
-  <div class="result-metadata" ng-show="isSearching">
-    <img src="images/loading-large.gif" />
-  </div>
-
-  <ul class="results media-list">
-    <li class="result media" ng-repeat="result in getResults()" >
-      <a class="pull-left" href ng-href="#/reviews/{{result.slug}}?gref={{result.reference}}">
-        <img class="media-object" ng-src="{{ (result.photos[0].getUrl({maxWidth: 120, maxHeight: 120})) || 'images/default.png' }}" alt="{{ result.name }}" width="60" height="60">
-      </a>
-      <div class="media-body">
-        <h4 class="media-heading"><a href ng-href="#/reviews/{{result.slug}}?gref={{result.reference}}">{{ result.name }}</a></h4>
-        <p>{{ result.vicinity }}</p>
-      </div>
-    </li>
-  </ul>
+<div class="result-metadata clearfix" ng-show="hasSearched()">
+  <p><small>Search returned <strong>{{ getResultCount() }}</strong> results.</small></p>
 </div>
+
+<div class="result-metadata" style="text-align: center;" ng-show="isSearching">
+  <img src="images/loading-large.gif" />
+</div>
+
+<ul class="results media-list" ng-hide="isSearching">
+  <li class="result media" ng-repeat="result in getResults()" >
+    <a class="pull-left" href ng-href="#/reviews/{{result.slug}}?gref={{result.reference}}">
+      <img class="media-object" ng-src="{{ (result.photos[0].getUrl({maxWidth: 120, maxHeight: 120})) || 'images/default.png' }}" alt="{{ result.name }}" width="60" height="60">
+    </a>
+    <div class="media-body">
+      <h4 class="media-heading"><a href ng-href="#/reviews/{{result.slug}}?gref={{result.reference}}">{{ result.name }}</a></h4>
+      <p>{{ result.formatted_address }}</p>
+    </div>
+  </li>
+</ul>
