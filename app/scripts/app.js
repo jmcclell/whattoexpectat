@@ -18,6 +18,10 @@ angular.module('whattoexpectatApp', [
         templateUrl: 'views/search.html',
         controller: 'SearchCtrl'
       })
+      .when('/place/:place_id', {
+        templateUrl: 'views/place.html',
+        controller: 'PlaceCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });

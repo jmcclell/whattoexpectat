@@ -1,81 +1,52 @@
 'use strict';
 
 angular.module('whattoexpectatApp')
-  .controller('SearchCtrl', function($scope, geolocation, ngGeocoderAPI, localStorageService, ngGPlacesAPI) {
+  .controller('SearchCtrl', function($scope, LocationService, ngGPlacesAPI) {
 
-    var locations = {
-      'New York, NY': ngGeocoderAPI.latlng(40.6700,  73.9400) // default location
+    LocationService.setCurrentLocation('New York, NY', 40.67, 73.94, false);
+    $scope.search = {
+      location: 'New York, NY'
     };
 
-    var setLocation = function(name, latlng) {
-      var location = {
-        name: name,
-        coords: latlng
-      };
-      locations[name] = latlng;
-      $scope.location = location;
-      localStorageService.set('location', {
-        name: name,
-        lat: latlng.lat(),
-        long: latlng.lng()
+    // attempt to find real location (or last saved location)
+    LocationService.getCurrentLocation(true)
+      .then(function(location) {
+        console.log('Found current location: ' + location.name);
+        $scope.search.location = location.name;
       });
-    };
 
-    var storedLocation = localStorageService.get('location');
-
-    if(storedLocation) {
-      setLocation(storedLocation.name, ngGeocoderAPI.latlng(storedLocation.lat, storedLocation.long));
-    } else {
-      setLocation('New York, NY', locations['New York, NY']); // set default for now
-
-      geolocation.getLocation().then(function(data) {
-        console.log(data);
-        var geoLocationLatLong = ngGeocoderAPI.latlng(data.coords.latitude, data.coords.longitude);
-        ngGeocoderAPI.geocode({
-          location: geoLocationLatLong
-        }).then(function(reverseData) {
-          console.log(reverseData);
-          var bestMatch = ngGeocoderAPI.parseReverseGeolocation(reverseData, ['neighborhood', 'postal_code', 'street_address']);
-
-          if (bestMatch == null) {
-            setLocation(geoLocationLatLong.toString(), geosLocationLatLong);          
-          } else {
-            setLocation(bestMatch.formatted_address, geoLocationLatLong);
-          }
-
-        },function() {
-          setLocation(geoLocationLatLong.toString(), geosLocationLatLong);           
-        });
-      });
-    }
-
-    $scope.$watch('location.name', function(newName, oldName) {
-      if (locations[newName]) {
-        $scope.location.coords = locations[newName];
-      } else {
-        ngGeocoderAPI.geocode({
-          address: newName
-        }).then(function(geocodeData) {
-          console.log(geocodeData);
-          if(geocodeData.length > 0) {
-          	setLocation(newName, geocodeData[0].geometry.location);     
-          } else {
-          	// some kind of fail message?
-            $scope.location.name = oldName;
-          }          
-        });
+    $scope.$watch('search.location', function(newName, oldName) {
+      if (oldName == newName || !oldName) {
+        return;
       }
+
+      console.log('Switching location to ' + newName);
+      LocationService.setCurrentLocationByName(newName)
+        .then(
+          function(newLocation) {
+            $scope.currentLocation = newLocation;
+          },
+          function(reason) {
+            // failure
+            $scope.search.location = oldName;
+          }
+        );
     });
 
     $scope.doSearch = function() {
-      var lat = $scope.location.coords.lat();
-      var long = $scope.location.coords.lng();
-      console.log('searching: ' + $scope.term + " near " + lat + ", " + long);
-      var results = ngGPlacesAPI.nearbySearch({latitude: lat, longitude: long, name: $scope.term}).then(
-	    function(data){
-	      console.log(data);
-	    }, function(reason) {
-	      console.log(reason);
-	    });
-      };
+      var lat = $scope.currentLocation.coords.lat();
+      var long = $scope.currentLocation.coords.lng();
+
+      var results = ngGPlacesAPI.nearbySearch({
+        latitude: lat,
+        longitude: long,
+        name: $scope.term
+      }).then(
+          function(data) {
+            console.log(data);
+            $scope.results = data;
+          }, function(reason) {
+            $scope.results = [];
+          });
+        };
   });
