@@ -1,14 +1,18 @@
 <h1>Search Places</h1>
 
 <form ng-submit="doSearch();">
-  <input type="text" ng-model="term"/>
-  <input type="submit" value="Search"/>
+  <input type="text" ng-model="search.term" ng-disabled="!canSearch()"/>
+  <input type="submit" value="Search" ng-disabled="!canSearch()"/>
 </form>
 <p>
-near <a href="#" editable-text="search.location">{{ search.location }}</a>
+    near <a href="#" editable-text="search.locationInput" e-placeholder="New York, NY" onbeforesave="updateLocation($data)">{{ search.locationInput || 'Click to choose location'}}</a>
+    <img ng-hide="canSearch()" src="images/loading.gif" />
 </p>
 
 <div class="results">
+  <div class="result" ng-hide="hasResults()">
+	<p>Search returned no results.</p>
+  </div>
   <div class="result" ng-repeat="result in results">
       <a href ng-href="#/place/{{result.reference}}">{{ result.name }}</a>
       <p>{{ result.vicinity }}</p>

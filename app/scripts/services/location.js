@@ -26,7 +26,7 @@ angular.module('whattoexpectatApp')
       return new google.maps.LatLng(lat, long);
     };
 
-    var setLocation = function(name, coords, save) {
+    var setLocation = function(name, coords) {
       currentLocation = {
         name: name,
         coords: coords
@@ -34,22 +34,20 @@ angular.module('whattoexpectatApp')
 
       locationCache.put(name, currentLocation);
 
-      if (save) {
-        localStorageService.set('currentLocation', {
-          name: currentLocation.name,
-          lat: currentLocation.coords.lat(),
-          long: currentLocation.coords.lng()
-        });
-      }
+      localStorageService.set('currentLocation', {
+        name: currentLocation.name,
+        lat: currentLocation.coords.lat(),
+        long: currentLocation.coords.lng()
+      });      
 
       return currentLocation;
     };
 
     return {
-      getCurrentLocation: function(refresh) {
+      getCurrentLocation: function() {
         var deferred = $q.defer();
 
-        if (refresh == true || !currentLocation) {
+        if (!currentLocation) {
           // is the location in local storage?
           currentLocation = getLocationFromLocalStorage();
           if (currentLocation) {
@@ -103,7 +101,7 @@ angular.module('whattoexpectatApp')
 
           geocoderPromise.then(function(geocodeData) {
             if (geocodeData.length > 0) {
-              setLocation(newName, geocodeData[0].geometry.location);
+              setLocation(name, geocodeData[0].geometry.location);
               deferred.resolve(currentLocation);
             } else {
               deferred.reject(currentLocation);
@@ -113,14 +111,10 @@ angular.module('whattoexpectatApp')
 
         return deferred.promise;
       },
-      setCurrentLocation: function(name, lat, long, save) {
-        if (save !== false) {
-          save = true;
-        }
-
+      setCurrentLocation: function(name, lat, long) {
         var deferred = $q.defer();
         var coords = coordsToLatLng(lat, long);
-        setLocation(name, coords, save);
+        setLocation(name, coords);
         deferred.resolve(currentLocation);
         return deferred.promise;
       }

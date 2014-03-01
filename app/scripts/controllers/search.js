@@ -2,51 +2,72 @@
 
 angular.module('whattoexpectatApp')
   .controller('SearchCtrl', function($scope, LocationService, ngGPlacesAPI) {
+    $scope.currentLocation = null;
+    $scope.results = false;
 
-    LocationService.setCurrentLocation('New York, NY', 40.67, 73.94, false);
     $scope.search = {
-      location: 'New York, NY'
+      term: '',
+      locationInput: ''
     };
 
-    // attempt to find real location (or last saved location)
-    LocationService.getCurrentLocation(true)
+    /*
+     * Attempt to load real location
+     */
+    // 
+    LocationService.getCurrentLocation()
       .then(function(location) {
-        console.log('Found current location: ' + location.name);
-        $scope.search.location = location.name;
+        $scope.currentLocation = location;
       });
 
-    $scope.$watch('search.location', function(newName, oldName) {
-      if (oldName == newName || !oldName) {
-        return;
+    $scope.$watch('currentLocation', function(newLocation) {
+      if (newLocation != null) {
+        $scope.search.locationInput = newLocation.name;  
+        console.log("Current location: " + newLocation.name);      
       }
-
-      console.log('Switching location to ' + newName);
-      LocationService.setCurrentLocationByName(newName)
-        .then(
-          function(newLocation) {
-            $scope.currentLocation = newLocation;
-          },
-          function(reason) {
-            // failure
-            $scope.search.location = oldName;
-          }
-        );
     });
 
+    /*
+     * Perform search
+     */
     $scope.doSearch = function() {
+      if ($scope.search.term.trim() == '') {
+        return;
+      }
       var lat = $scope.currentLocation.coords.lat();
       var long = $scope.currentLocation.coords.lng();
 
       var results = ngGPlacesAPI.nearbySearch({
         latitude: lat,
         longitude: long,
-        name: $scope.term
+        name: $scope.search.term
       }).then(
           function(data) {
-            console.log(data);
             $scope.results = data;
           }, function(reason) {
             $scope.results = [];
           });
         };
+
+    $scope.hasResults = function() {
+      return ($scope.results === false || $scope.results.length > 0);
+    };
+
+    $scope.updateLocation = function(locationName) {
+      locationName = locationName.trim();
+      if (locationName == '') {
+        return false;
+      }
+
+      $scope.currentLocation = null;
+      LocationService.setCurrentLocationByName(locationName)
+        .then(
+          function(newLocation) {
+            $scope.currentLocation = newLocation;
+          }
+        );
+    };
+
+    $scope.canSearch = function() {
+      return $scope.currentLocation != null;
+    };
   });
