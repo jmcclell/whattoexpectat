@@ -27,4 +27,20 @@ angular.module('whattoexpectatApp', [
   })
   .run(function(editableOptions) {
     editableOptions.theme = 'bs3';
+  })
+  .run(function($rootScope, $modal, AuthService) {
+    $rootScope.auth = AuthService;
+    
+    $rootScope.openAuthModal = function () {
+      if (AuthService.user) {
+        console.log("There is already a user logged in. Not showing auth modal.");
+        return false;
+      }
+      
+      return $modal.open({
+        templateUrl: 'views/auth-form.html',
+        controller: 'AuthCtrl'      
+      });
+    }
+    
   });

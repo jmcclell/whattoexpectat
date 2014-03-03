@@ -1,0 +1,63 @@
+<div class="modal-header">
+  <button type="button" class="close pull-right" aria-hidden="true" ng-click="$dismiss('close')">&times;</button>
+  <h3>Sign In / Sign Up</h3>
+</div>            
+<div class="modal-body">
+  <form name="form.authForm" role="form" ng-submit="authSubmit()" novalidate>
+    <fieldset>
+      <div class="form-group" ng-class="{'has-error': form.authForm.email.$dirty && form.authForm.email.$invalid}">
+        <label for="emailInput" class="control-label">Email</label>
+        <input name="email" id="emailInput" type="email" class="form-control" placeholder="you@awesome.com" ng-model="authUser.email" required ng-disabled="!form.enabled"/>
+        <p class="help-block" ng-hide="form.authForm.email.$dirty && form.authForm.email.$invalid">
+          <small>Don't have an account? No worries, creating an account is no different than logging in!</small>
+        </p>
+        <p class="help-block" ng-show="form.authForm.email.$dirty && form.authForm.email.$error.required">
+          <small>We need your email address!</small>
+        </p>
+	    <p class="help-block" ng-show="form.authForm.email.$dirty && form.authForm.email.$error.email">
+	      <small>Invalid email address.</small>
+	    </p>	    
+      </div>
+      <div class="form-group" ng-class="{'has-error': form.authForm.password.$dirty && (form.authForm.password.$invalid || form.badPassword)}">
+        <label for="passwordInput" class="control-label" ng-required="true">Password</label>
+		<input name="password" id="passwordInput" class="form-control" type="password" ng-model="authUser.password"  required ng-minlength="8" ng-disabled="!form.enabled"/>    
+        <p class="help-block" ng-show="form.authForm.password.$dirty && form.authForm.password.$error.required">
+          <small>We need a password!</small>
+        </p>
+	    <p class="help-block" ng-show="form.authForm.password.$dirty && form.authForm.password.$error.minlength">
+	      <small>Password must be at least 8 characters.</small>
+	    </p>	    
+		<p class="help-block" ng-show="form.badPassword">
+	      <small>Oh, snap! That's the wrong password for that account.</small>
+		  <br/>		  
+	      <small ng-show="passwordResetConfirmationState == 0">Don't remember signing up? Try <a href ng-click="resetPassword(1)">resetting your password</a>.</small>	    
+	    </p>
+	    <p class="help-block" ng-hide="form.badPassword" ng-show="passwordResetConfirmationState == 0">
+		  <small><a href ng-click="resetPassword(1)">Forget your password?</a></small>
+	    </p> 
+	    <p class="help-block">
+	      <small ng-show="passwordResetConfirmationState == -1">
+	        Please enter a valid email address above so we can send you a confirmation email! <a href ng-click="resetPassword(1)">Retry</a>
+	      </small>
+		  <small ng-show="passwordResetConfirmationState == 1">
+	        Would you like us to send you a password reset email to {{ authUser.email }}?
+	        &nbsp;<a href ng-click="resetPassword(2)">Yes</a>
+	        &nbsp;|&nbsp;<a href ng-click="resetPassword(0)">No</a>
+	      </small>
+	      <small ng-show="passwordResetConfirmationState == 2">
+	        We are sending a reset password email to: {{ authUser.email }}
+	      </small>
+	      <small ng-show="passwordResetConfirmationState == 3">
+	        Reset password confirmation email has been sent!
+	      </small>
+	    </p>
+	  </div>
+    </fieldset>
+    <div class="form-group clearfix">
+      <button type="submit" class="btn btn-primary pull-right" ng-disabled="form.authForm.$invalid || !form.enabled">Sign In / Sign Up</button>
+    </div>
+  </form>  
+</div>
+<div class="modal-footer">  
+  <button class="btn btn-default" ng-click="$dismiss('cancel')">Cancel</button>
+</div>

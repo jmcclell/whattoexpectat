@@ -22,7 +22,7 @@
 <ul class="results media-list" ng-hide="isSearching">
   <li class="result media" ng-repeat="result in getResults()" >
     <a class="pull-left" href ng-href="#/reviews/{{result.slug}}?gref={{result.reference}}">
-      <img class="media-object" ng-src="{{ (result.photos[0].getUrl({maxWidth: 120, maxHeight: 120})) || 'images/default.png' }}" alt="{{ result.name }}" width="60" height="60">
+      <img class="media-object" ng-src="{{ (result.photos[0].getUrl({maxWidth: 120, maxHeight: 120})) || result.icon ||'images/default.png' }}" alt="{{ result.name }}" width="60" height="60">
     </a>
     <div class="media-body">
       <h4 class="media-heading"><a href ng-href="#/reviews/{{result.slug}}?gref={{result.reference}}">{{ result.name }}</a></h4>

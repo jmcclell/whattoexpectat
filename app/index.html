@@ -26,7 +26,20 @@
     <![endif]-->
 
     <!-- Add your site or application content here -->
-    <div class="container" ng-view=""> 
+
+
+
+    <p class="top-right" ng-show="auth.user" >
+      <small>{{ auth.user.email }}</small>&nbsp;<a href ng-click="auth.$logout()">Sign Out</a>
+    </p>
+
+    <div class="top-right">
+        <span ng-hide="auth.user" >
+          <a href ng-click="openAuthModal()">Sign In / Sign Up</a>
+        </span>
+    </div>
+
+    <div class="container" ng-view>
     </div>
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
@@ -71,6 +84,8 @@
     <script src="scripts/services/search.js"></script>
     <script src="scripts/controllers/search.js"></script>
     <script src="scripts/controllers/review.js"></script>
+    <script src="scripts/controllers/auth.js"></script>
+    <script src="scripts/services/auth.js"></script>
     <script src="scripts/services/review.js"></script>
     <!-- endbuild -->
 </body>

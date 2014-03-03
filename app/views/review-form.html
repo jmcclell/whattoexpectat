@@ -1,0 +1,27 @@
+<div class="modal-header">
+  <button type="button" class="close pull-right" aria-hidden="true" ng-click="$dismiss('close')">&times;</button>
+  <h3>Your Experience&nbsp;<small>at {{ placeDetail.name }}</small></h3>
+</div>            
+<div class="modal-body">
+  <form name="form.reviewForm" role="form" ng-submit="submitReview()" novalidate>
+    <fieldset>
+      <div class="form-group">
+        <label for="reviewInput" class="control-label">140 Character Review</label>
+        <em class="text-muted">&nbsp;(optional)</em>
+        <div class="input-group" ng-class="{'has-error': form.reviewForm.review.$dirty && form.reviewForm.review.$invalid}">          
+          <input name="review" id="reviewInput" class="form-control" placeholder="The potatoes smelled funny." type="text" required maxlength="140" ng-maxlength="140" ng-minlength="8" ng-model="review.text" ng-disabled="!form.enabled" required/>
+          <span class="input-group-addon">{{ 140 - form.reviewForm.review.$viewValue.length}}</span>                  
+        </div>  
+        <p class="help-block" ng-show="form.reviewForm.review.$dirty && (form.reviewForm.review.$error.required || form.reviewForm.review.$error.minlength)">
+          <small>Your review is too short. We value brevity, but come on!</small>
+        </p>  
+      </div>
+    </fieldset>
+    <div class="form-group clearfix">
+      <button type="submit" class="btn btn-primary pull-right" ng-disabled="form.reviewForm.$invalid || !form.enabled">Submit Review</button>
+    </div>    
+  </form>  
+</div>
+<div class="modal-footer">  
+  <button class="btn btn-default" ng-click="$dismiss('cancel')">Cancel</button>
+</div>

@@ -1,41 +1,70 @@
-<h1><small>What to expect at</small> {{ review.place.name }}</h1>
-
-<address>
-  {{ review.place.formatted_address }}<br>
-  {{ review.place.formatted_phone_number }}<br>
-  <a href="{{ review.place.website }}">{{ review.place.website }}</a>
-</address>
-
-<a href ng-click="backToSearchResults()" ng-show="cameFromSearch">Back to search results</a>
-
-<h4>People said...</h4>
-<div class="reviews">
-   <!-- </p><em class="text-muted">No reviews at this time</em></div> -->
-	<blockquote>
-	  <p>I had to ask for limes. Twice.</p>
-	  <footer>Niles Rowland</footer>
-	</blockquote>
-	<blockquote>
-	  <p>Pooping here is a nightmare rivaled only by the 11th floor Discovery bathroom.</p>
-	  <footer>Sunny Patel</footer>
-	</blockquote>
-
+<h1><small>What to expect at</small> {{ review.placeDetail.name }}</h1>
+<p ng-show="searchContext">
+  <a href ng-click="backToSearchResults()">Back to search results</a>
+</p>
+<div class="row">
+  <div class="col-md-8">
+    <ul class="results media-list">
+      <li class="result media" >
+        <div class="pull-left">
+          <img class="media-object" ng-src="{{ (review.placeDetail.photos[0].getUrl({maxWidth: 120, maxHeight: 120})) || review.placeDetail.icon ||'images/default.png' }}" alt="{{ review.placeDetail.name }}" width="60" height="60">
+        </div>
+        <div class="media-body">
+          <address id="address">
+            {{ review.placeDetail.formatted_address }}<br>
+            {{ review.placeDetail.formatted_phone_number }}<br>
+            <a href="{{ review.placeDetail.website }}">{{ review.placeDetail.website }}</a>
+          </address>
+        </div>
+      </li>
+    </ul>  
+    <div class="reviews">
+      <h4>People are saying...</h4>      
+      <div class="clearfix">
+        <button class="btn btn-primary pull-right" ng-click="openNewReviewModal()">Add Review</button>
+      </div>
+      <div style="text-align: center;" ng-hide="hasLoadedReviews">
+        <img src="images/loading-large.gif" />
+      </div>
+      <p ng-show="hasLoadedReviews && review.reviews.length == 0">
+        <em class="text-muted">No one has reviewed <strong>{{ review.placeDetail.name }}</strong> yet. Why don't you <a href ng-click="openNewReviewModal()">add a review</a>?</em>
+      </p>      
+      <blockquote ng-repeat="review in review.reviews">
+        <p>{{ review.review.review }}</p>
+        <footer>{{ review.user.name }}</footer>
+      </blockquote>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="row">      
+      <div class="col-md-12">
+        <div ng-if="review.placeDetail.photos.length">
+          <h4>Photos</h4>
+          <carousel interval="-1" style="">
+            <slide ng-repeat="photo in review.placeDetail.photos">
+              <img ng-src="{{photo.getUrl({maxWidth: 500, maxHeight: 300 })}}" style="margin:auto; width: 100%; maxHeight: 300px">
+              <div class="carousel-caption">
+              </div>
+            </slide>
+          </carousel>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <style>
+        .angular-google-map-container { height: 300px; width: 100%; }
+        </style>
+        <div ng-if="map">
+            <h4>Map</h4>
+            <google-map center="map.center" zoom="map.zoom">
+              <marker coords="placemarker.location" >
+              </marker>
+            </google-map>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<h4>People saw...</h4>
 
 
-<carousel interval="-1" style="width: 350px;">
-  <slide ng-repeat="photo in review.place.photos">
-    <img ng-src="{{photo.getUrl({maxWidth: 350, maxHeight: 350 })}}" style="margin:auto;">
-    <div class="carousel-caption">
-    </div>
-  </slide>
-</carousel>
   
-
-<h4>Map</h4>
-<style>
-.angular-google-map-container { height: 350px; width: 350px; }
-</style>
-<google-map center="map.center" zoom="map.zoom"></google-map>
