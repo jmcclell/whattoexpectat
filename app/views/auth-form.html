@@ -42,7 +42,7 @@
 		  <small ng-show="passwordResetConfirmationState == 1">
 	        Would you like us to send you a password reset email to {{ authUser.email }}?
 	        &nbsp;<a href ng-click="resetPassword(2)">Yes</a>
-	        &nbsp;|&nbsp;<a href ng-click="resetPassword(0)">No</a>
+	        &nbsp;/&nbsp;<a href ng-click="resetPassword(0)">No</a>
 	      </small>
 	      <small ng-show="passwordResetConfirmationState == 2">
 	        We are sending a reset password email to: {{ authUser.email }}

@@ -9,16 +9,15 @@
         <label for="reviewInput" class="control-label">140 Character Review</label>
         <em class="text-muted">&nbsp;(optional)</em>
         <div class="input-group" ng-class="{'has-error': form.reviewForm.review.$dirty && form.reviewForm.review.$invalid}">          
-          <input name="review" id="reviewInput" class="form-control" placeholder="The potatoes smelled funny." type="text" required maxlength="140" ng-maxlength="140" ng-minlength="8" ng-model="review.text" ng-disabled="!form.enabled" required/>
+          <input name="review" id="reviewInput" class="form-control" placeholder="The bartender smelled funny." type="text"  maxlength="140" ng-maxlength="140" ng-model="review.text" ng-disabled="!form.enabled"/>
           <span class="input-group-addon">{{ 140 - form.reviewForm.review.$viewValue.length}}</span>                  
-        </div>  
-        <p class="help-block" ng-show="form.reviewForm.review.$dirty && (form.reviewForm.review.$error.required || form.reviewForm.review.$error.minlength)">
-          <small>Your review is too short. We value brevity, but come on!</small>
-        </p>  
+        </div>   
       </div>
     </fieldset>
-    <div class="form-group clearfix">
-      <button type="submit" class="btn btn-primary pull-right" ng-disabled="form.reviewForm.$invalid || !form.enabled">Submit Review</button>
+    <div class="form-group clearfix" style="text-align: center">
+      <button type="submit" class="btn btn-lg btn-danger" ng-disabled="form.reviewForm.$invalid || !form.enabled" ng-click="review.recommendationModifier=-1">This Place Sucks&nbsp;<span class="glyphicon glyphicon-thumbs-down"></span></button>
+      <button type="submit" class="btn btn-lg btn-default" ng-disabled="form.reviewForm.$invalid || !form.enabled" ng-click="review.recommendationModifier=0">Meh.</button>
+      <button type="submit" class="btn btn-lg btn-success" ng-disabled="form.reviewForm.$invalid || !form.enabled" ng-click="review.recommendationModifier=1">Would Come Back&nbsp;<span class="glyphicon glyphicon-thumbs-up"></span></button>    
     </div>    
   </form>  
 </div>

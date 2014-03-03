@@ -3,9 +3,9 @@
 angular.module('whattoexpectatApp')
   .controller('ReviewCtrl',
              ['$scope', '$routeParams', '$location', 'SearchService', '$window', '$q',
-              '$modal', 'ReviewService', '$rootScope', 'AuthService',
+              '$modal', 'ReviewService', '$rootScope', 'AuthService', 'PlaceService',
     function($scope, $routeParams, $location, SearchService, $window, $q,
-             $modal, ReviewService, $rootScope, AuthService) {
+             $modal, ReviewService, $rootScope, AuthService, PlaceService) {
 
       var slug = $routeParams.slug;
       var gref = $location.search().gref;
@@ -13,59 +13,66 @@ angular.module('whattoexpectatApp')
       var mapDefer = $q.defer();
 
       $scope.searchContext = SearchService;
-    
-      if (!gref) {
-        // do we have a search result to get it from?
-        // we may want to not do this actually, it makes things weird for users
-        var searchResult = SearchService.getSearchResultByIndexKey(slug);
-        if (searchResult && searchResult.reference) {
-          gref = searchResult.reference;
-        } else { 
-          $location.url('/?q=' + slug.split('-').join(' '));
-          return;
-        }
+      $scope.review = {
+              placeDetail: null,
+              place: PlaceService.getPlaceBySlug(slug),
+              reviews: [],
+              recommendationModifier: 0
+            };
+      
+      if (gref) {
+        initializeWithGref();
+      } else {
+        var grefRef = $scope.review.place.$child('gref');
+        grefRef.$on('loaded', function(data) {
+          gref = data;
+          if(!gref) {
+            console.log('no gref');
+            $location.url('/?q=' + slug.split('-').join(' '));         //
+          } else {
+            initializeWithGref();
+          }
+        });       
       }
+      
+      function initializeWithGref() {
+        SearchService.getPlaceDetailByGRef(gref)
+          .then(function(placeDetail) {      
+            $scope.review.placeDetail = placeDetail;      
 
-      SearchService.getPlaceDetailByGRef(gref)
-        .then(function(placeDetail) {
-          $scope.review = {
-            placeDetail: placeDetail,
-            place: null,
-            reviews: []
-          };
+            $scope.map = {
+              center: {
+                latitude: placeDetail.geometry.location.lat(),
+                longitude: placeDetail.geometry.location.lng()
+              },
+              zoom: 18
+            };
 
-          $scope.map = {
-            center: {
-              latitude: placeDetail.geometry.location.lat(),
-              longitude: placeDetail.geometry.location.lng()
-            },
-            zoom: 18
-          };
+            $scope.placemarker = {          
+              location: {
+                latitude: placeDetail.geometry.location.lat(),
+                longitude: placeDetail.geometry.location.lng()
+              }      
+            };
 
-          $scope.placemarker = {          
-            location: {
-              latitude: placeDetail.geometry.location.lat(),
-              longitude: placeDetail.geometry.location.lng()
-            }      
-          };
+            $scope.hasLoadedReviews = false;     
 
-          $scope.hasLoadedReviews = false;     
+            // this code must run inside the .then() of a promise
+            // which retrieves the place from the database
+            // which means we need a place service that isn't
+            // our search service
+            ReviewService.findReviewsByPlaceId(1)
+              .then(function(reviews) {
+                $scope.hasLoadedReviews = true;
+                $scope.review.reviews = reviews;
+              });
 
-          // this code must run inside the .then() of a promise
-          // which retrieves the place from the database
-          // which means we need a place service that isn't
-          // our search service
-          ReviewService.findReviewsByPlaceId(1)
-            .then(function(reviews) {
-              $scope.hasLoadedReviews = true;
-              $scope.review.reviews = reviews;
-            });
-
-          console.log(placeDetail);
-        }, function(error) {
-          $location.url('/?q=' + slug.split('-').join(' '));
-          return;
-        }); 
+            console.log(placeDetail);
+          }, function(error) {
+            $location.url('/?q=' + slug.split('-').join(' '));
+            return;
+          }); 
+      }
 
       $scope.openNewReviewModal = function () {
         if (!AuthService.user) {
@@ -95,8 +102,8 @@ angular.module('whattoexpectatApp')
       };
     }
   ])
-  .controller('ReviewModalCtrl', ['$scope', '$modalInstance', 'place', 'placeDetail',
-    function($scope, reviewModal, place, placeDetail) {
+  .controller('ReviewModalCtrl', ['$scope', '$modalInstance', 'ReviewService', 'AuthService', 'place', 'placeDetail',
+    function($scope, reviewModal, ReviewService, AuthService, place, placeDetail) {
       console.log(placeDetail);
       $scope.placeDetail = placeDetail;
       $scope.review = {
@@ -109,15 +116,18 @@ angular.module('whattoexpectatApp')
       }
 
       $scope.submitReview = function() {
-        var review = $scope.review.text;
-        if (review.length < 8 || review.length > 140) {
-          return false;
-        }
-
-        ReviewService.addReview(placeId, userId, review);
-
-        console.log('Save new review: ' + review);
-
+        $scope.form.enabled = false;
+        var reviewText = $scope.review.text.substring(0, 140); //doubly enforce 140char max
+        var recommendationModifier = $scope.review.recommendationModifier;
+        var userId = AuthService.user.id;
+        var placeId = 1;
+       
+        ReviewService.addReview(placeId, userId, reviewText, recommendationModifier)
+          .then(function(review){
+            console.log('New review promise returned.');
+            console.log(review);
+            $scope.form.enabled = true;
+          });
       };
     }
   ]);

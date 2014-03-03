@@ -42,6 +42,19 @@ angular.module('whattoexpectatApp')
           }, 1000);
 
           return deferred.promise;
+        },
+        addReview: function(placeId, userId, review, recommendationModifier) {
+          var deferred = $q.defer();
+          setTimeout(function() {
+            deferred.resolve({
+              review: review,
+              recommendationModifier: recommendationModifier,
+              userId: userId,
+              placeId: placeId
+            });
+          }, 1500);
+
+          return deferred.promise;
         }
       };
     }
