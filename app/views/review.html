@@ -26,12 +26,25 @@
       <div style="text-align: center;" ng-hide="hasLoadedReviews">
         <img src="images/loading-large.gif" />
       </div>
-      <p ng-show="hasLoadedReviews && review.reviews.length == 0">
+      <p ng-show="hasLoadedReviews && review.reviews.$getIndex().length == 0">
         <em class="text-muted">No one has reviewed <strong>{{ review.placeDetail.name }}</strong> yet. Why don't you <a href ng-click="openNewReviewModal()">add a review</a>?</em>
       </p>      
       <blockquote ng-repeat="review in review.reviews">
-        <p>{{ review.review.review }}</p>
-        <footer>{{ review.user.name }}</footer>
+        <p>
+          <span style="font-size: 40px; font-weight: bold; padding-right: 15px;">&ldquo;</span>{{ review.review }}
+          <button ng-show="auth.user.id == review.user_id" ng-click="openNewReviewModal()" class="btn btn-xs btn-link"><span class="glyphicon glyphicon-edit"></span></button>
+          <button ng-show="auth.user.id == review.user_id && !deleteReviewState[review.user_id]" ng-click="deleteReview(review.user_id, 1)" class="btn btn-xs btn-link" style="color: red;"><span class="glyphicon glyphicon-remove-sign"></span></button>
+          <em style="font-size: 12px" ng-show="auth.user.id == review.user_id && deleteReviewState[review.user_id] === 1">Are you sure? <a href ng-click="deleteReview(review.user_id, 2)">Yes</a> / <a href ng-click="deleteReview(review.user_id, 0)">No</a></em>
+        </p>
+        <footer>
+            <p class="muted-text">      
+              <small>
+                {{ review.username }}               
+                <button class="btn btn-xs btn-default" ng-class="{'btn-success': review.votes[auth.user.id] === true}" ng-click="vote(review.user_id, true)"><span class="glyphicon glyphicon-thumbs-up"></span></button>                
+                 <button class="btn btn-xs btn-default" ng-class="{'btn-danger': review.votes[auth.user.id] === false}" ng-click="vote(review.user_id, false)"><span class="glyphicon glyphicon-thumbs-down"></span></button>
+              </small>
+            </p>            
+        </footer>
       </blockquote>
     </div>
   </div>

@@ -15,7 +15,7 @@ angular.module('whattoexpectatApp')
 
       $scope.review = {
               placeDetail: null,
-              place: PlaceService.getPlaceBySlug(slug),
+              place: PlaceService.$child(slug),
               reviews: [],
               recommendationModifier: 0
             };
@@ -58,11 +58,11 @@ angular.module('whattoexpectatApp')
 
             $scope.hasLoadedReviews = false;
 
-            ReviewService.findReviewsByPlaceId(1)
-              .then(function(reviews) {
+            $scope.review.reviews = ReviewService.$child(slug);
+            $scope.review.reviews.$on('loaded', function(reviews) {
+                console.log(reviews);
                 $scope.hasLoadedReviews = true;
-                $scope.review.reviews = reviews;
-              });
+            });
 
             console.log(placeDetail);
           }, function(error) {
@@ -89,10 +89,58 @@ angular.module('whattoexpectatApp')
               place: function() {
                 return $scope.review.place;
               },
-              gref: function() {
-                return gref;
+              reviews: function() {
+                return $scope.review.reviews;
               }
             }
+          });
+        };
+
+        $scope.deleteReviewState = {};
+
+        $scope.deleteReview = function(reviewId, state) {
+          $scope.deleteReviewState[reviewId] = state;
+          switch ($scope.deleteReviewState[reviewId]) {
+            case 2:              
+              $scope.deleteReviewState[reviewId] = 3;
+              $scope.review.reviews.$remove(reviewId).then(function() {
+                $scope.deleteReviewState[reviewId] = 0;
+              });
+          }          
+        };
+
+        $scope.vote = function(reviewId, vote) {
+          var review = $scope.review.reviews.$child(reviewId);
+
+          review.$transaction(function(lockedReview) {
+            console.log(lockedReview);
+            if (!lockedReview.votes) {
+              lockedReview.votes = {};
+            }
+            var curVote = lockedReview.votes[AuthService.user.id];
+            
+            if (curVote === true) {         
+              lockedReview.upvotes = (lockedReview.upvotes || 1) - 1;
+            } else if (curVote === false) {
+              lockedReview.downvotes = (lockedReview.downvotes || 1) - 1;
+            } else {
+              lockedReview.total_votes = (lockedReview.total_votes || 0) + 1;
+            }
+
+            if (vote === true && curVote !== true) {
+              lockedReview.upvotes = (lockedReview.upvotes || 0) + 1;
+            } else if (vote === false && curVote !== false) {
+              lockedReview.downvotes = (lockedReview.downvotes || 0) + 1;
+            }
+
+            if (curVote === vote) {
+              lockedReview.total_votes = (lockedReview.total_votes || 1) - 1;
+              delete(lockedReview.votes[AuthService.user.id]);
+            } else {
+              lockedReview.votes[AuthService.user.id] = vote;
+            }
+
+            return lockedReview;
           });
         };
       }
@@ -102,12 +150,24 @@ angular.module('whattoexpectatApp')
       };
     }
   ])
-  .controller('ReviewModalCtrl', ['$scope', '$modalInstance', 'ReviewService', 'AuthService', 'PlaceService', 'place', 'placeDetail',
-    function($scope, reviewModal, ReviewService, AuthService, PlaceService, place, placeDetail, gref) {
+  .controller('ReviewModalCtrl', ['$scope', '$modalInstance', 'AuthService', 'reviews', 'place', 'placeDetail',
+    function($scope, reviewModal, AuthService, reviews, place, placeDetail) {
+      var SCORE_HATE = -1;
+      var SCORE_MEH = 0;
+      var SCORE_LOVE = 1;
+
+      var reviewText = '';
+      if (reviews[AuthService.user.id] && reviews[AuthService.user.id].review) {
+        reviewText = reviews[AuthService.user.id].review;
+      }
       $scope.placeDetail = placeDetail;
       $scope.review = {
-        text: ''
+        text: reviewText
       };
+
+      $scope.review.recommendationModifier = 0;
+
+
 
       $scope.form = {
         reviewForm: null,
@@ -121,25 +181,71 @@ angular.module('whattoexpectatApp')
         var recommendationModifier = $scope.review.recommendationModifier;
         var userId = AuthService.user.id;
 
-        
-        PlaceService.updatePlace({
-          slug: placeDetail.slug,
-          name: placeDetail.name,
-          gref: gref
-        }, recommendationModifier).then(function() {
-            ReviewService.addReview(placeId, userId, reviewText, recommendationModifier)
-              .then(function(review) {
-                console.log('New review promise returned.');
-                console.log(review);
-                $scope.form.enabled = true;
-              });
-          };
-          });
+        var review = reviews.$child(userId);
 
-        if (!$scope.review.place.gref) {
-          // This place isn't saved yet, so let's initialize it
-          PlaceService.addPlace(placeDetail.slug, gref);
-        }
+        review.$on('loaded', function() {
+          // Update the base details of the place
+          place.$update({
+            slug: placeDetail.slug,
+            name: placeDetail.name,
+            gref: placeDetail.gref
+          }).then(function() {
+              // Use a transaction to adjust the score of the place 
+              console.log('place is:');
+              console.log(place);           
+              var transPromise = place.$transaction(function(lockedPlace) {
+                // if we have an existing review for this user, undo the previous recommendation first
+                console.log(review);
+                if (review.user_id) {
+                  switch (review.recommendation_modifier) {
+                    case SCORE_HATE:
+                      lockedPlace.hate_review_count = (lockedPlace.hate_review_count || 1) - 1; // default to 1 so that when we subtract 1 we are at 0
+                      break;
+                    case SCORE_MEH:
+                      lockedPlace.meh_review_count = (lockedPlace.meh_review_count || 1) - 1;
+                      break;
+                    case SCORE_LOVE:
+                      lockedPlace.love_review_count = (lockedPlace.love_review_count || 1) - 1;
+                      break;
+                  };
+
+                  lockedPlace.total_review_count = (lockedPlace.total_review_count || 1) - 1;
+                }
+                // no we we can add our new score (i'm tired but this looks like pretty horrible code)
+                switch (recommendationModifier) {
+                  case SCORE_HATE:
+                    lockedPlace.hate_review_count = (lockedPlace.hate_review_count || 0) + 1;
+                    break;
+                  case SCORE_MEH:
+                    lockedPlace.meh_review_count = (lockedPlace.meh_review_count || 0) + 1;
+                    break;
+                  case SCORE_LOVE:
+                    lockedPlace.love_review_count = (lockedPlace.love_review_count || 0) + 1;
+                    break;
+                };
+
+                lockedPlace.total_review_count = (lockedPlace.total_review_count || 0) + 1;
+
+                return lockedPlace;
+              }).then(function(resultSnapshot) {  
+                // upvote by default new comments  
+                var voteObj = {};
+                voteObj[AuthService.user.id] = true;
+
+                review.$update({
+                  user_id: AuthService.user.id,
+                  username: AuthService.user.email,
+                  review: reviewText,
+                  recommendation_modifier: recommendationModifier,
+                  upvotes: 1,
+                  total_votes: 1,
+                  votes: voteObj
+                }).then(function() {                
+                    reviewModal.close(review);
+                  });
+              });
+            });
+        });        
       };
     }
   ]);

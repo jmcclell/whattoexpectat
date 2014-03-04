@@ -8,8 +8,7 @@ angular.module('whattoexpectatApp', [
   'firebase',
   'slugifier',
   'ui.bootstrap',
-  'google-maps',
-  'xeditable'
+  'google-maps'
 ])
   .config(function($routeProvider) {
     $routeProvider
@@ -24,9 +23,6 @@ angular.module('whattoexpectatApp', [
       .otherwise({
         redirectTo: '/'
       });
-  })
-  .run(function(editableOptions) {
-    editableOptions.theme = 'bs3';
   })
   .run(function($rootScope, $modal, AuthService) {
     $rootScope.auth = AuthService;

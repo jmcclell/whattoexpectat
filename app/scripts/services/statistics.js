@@ -4,7 +4,7 @@ angular.module('whattoexpectatApp')
   .factory('StatisticsService', [
     function() {
       return {
-        ConfidenceIntervalLowerBound(ratingTypeCount, totalRatingCount) {
+        ConfidenceIntervalLowerBound: function(ratingTypeCount, totalRatingCount) {
           if (totalRatingCount == 0) {
             return 0;
           }

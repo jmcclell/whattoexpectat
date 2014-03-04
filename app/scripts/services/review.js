@@ -1,61 +1,9 @@
 'use strict';
 
 angular.module('whattoexpectatApp')
-  .factory('ReviewService', ['$q', 'configuration', '$firebase',
-    function($q, configuration, $firebase) {
-      return {
-        findReviewsByPlaceId: function(placeId) {
-          var deferred = $q.defer();
-          setTimeout(function() {
-            deferred.resolve([{
-                review: {
-                  id: 1,
-                  userId: 1,
-                  placeId: 1,
-                  review: 'I had to ask for limes. Twice'
-                },
-                user: {
-                  id: 1,
-                  name: 'Niles Rowland'
-                }
-              },
-              {
-                review: {
-                  id: 2,
-                  userId: 2,
-                  placeId: 1,
-                  review: 'Pooping here is a nightmare.'
-                },
-                user: {
-                  id: 2,
-                  name: 'Sunny Patel'
-                }
-              }]);
-          }, 2000);
-
-          return deferred.promise;
-        },
-        findReviewsByUserId: function(userId) {
-          var deferred = $q.defer();
-          setTimeout(function() {
-            deferred.resolve([]);
-          }, 1000);
-
-          return deferred.promise;
-        },
-        addReview: function(placeId, userId, review, recommendationModifier) {
-          var deferred = $q.defer();
-          setTimeout(function() {
-            deferred.resolve({
-              review: review,
-              recommendationModifier: recommendationModifier,
-              userId: userId,
-              placeId: placeId
-            });
-          }, 1500);
-
-          return deferred.promise;
-        }
-      };
+  .factory('ReviewService', ['configuration', '$firebase',
+    function(configuration, $firebase) {
+      var ref = new Firebase('https://' + configuration.firebase + '.firebaseio.com/reviews');
+        return $firebase(ref);
     }
   ]);
